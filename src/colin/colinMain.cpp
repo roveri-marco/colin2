@@ -30,6 +30,7 @@
 #endif
 
 #include <sys/times.h>
+#include <unistd.h>
 
 #include <sstream>
 
@@ -103,10 +104,10 @@ int main(int argc, char * argv[])
     bool postHocTotalOrder = false;
     bool debugPreprocessing = false;
     bool postHocScheduleToMetric = false;
-    
+
     #ifdef STOCHASTICDURATIONS
     const char * const defaultDurationManager = "montecarlo";
- 
+
     const char * durationManagerString = defaultDurationManager;
     #endif
 
@@ -118,7 +119,7 @@ int main(int argc, char * argv[])
     FF::tsChecking = true;
 
     LPScheduler::workOutFactLayerZeroBoundsStraightAfterRecentAction = true;
-    
+
     while (argcount < argc && argv[argcount][0] == '-') {
 
         string remainder(&(argv[argcount][1]));
@@ -367,7 +368,7 @@ int main(int argc, char * argv[])
 
     #ifdef STOCHASTICDURATIONS
     const int expectFromHere = 3;
-    #else 
+    #else
     const int expectFromHere = 2;
     #endif
 
@@ -391,7 +392,7 @@ int main(int argc, char * argv[])
 
     #ifdef TOTALORDERSTATES
     MinimalState::setTransformer(new TotalOrderTransformer());
-    #else    
+    #else
     if (Globals::totalOrder) {
         MinimalState::setTransformer(new TotalOrderTransformer());
     } else {
@@ -399,33 +400,33 @@ int main(int argc, char * argv[])
     }
     #endif
 
-    #ifdef ENABLE_DEBUGGING_HOOKS    
+    #ifdef ENABLE_DEBUGGING_HOOKS
     if (debugPreprocessing) {
         Globals::planFilename = argv[argc - 1];
     }
     #endif
-    
+
     #ifdef POPF3ANALYSIS
     const bool realOpt = Globals::optimiseSolutionQuality;
     Globals::optimiseSolutionQuality = (Globals::optimiseSolutionQuality || postHocScheduleToMetric);
     #endif
-    
+
     RPGBuilder::initialise();
 
     #ifdef POPF3ANALYSIS
     Globals::optimiseSolutionQuality = realOpt;
     #endif
-    
+
     #ifdef STOCHASTICDURATIONS
-    initialiseDistributions();            
+    initialiseDistributions();
     setSolutionDeadlineTimeToLatestGoal();
     #endif
-    
-    
+
+
     bool reachesGoals;
-    
+
     Solution planAndConstraints;
-    
+
     list<FFEvent> * & spSoln = planAndConstraints.plan;
     if (readInAPlan) {
         spSoln = readPlan(argv[argc - 1]);
@@ -438,11 +439,11 @@ int main(int argc, char * argv[])
     }
 
     if (spSoln) {
-        
+
         for (int pass = 0; pass < 2; ++pass) {
             if (pass) {
                 if (!postHocScheduleToMetric) break;
-                #ifndef TOTALORDERSTATES                                                
+                #ifndef TOTALORDERSTATES
                 if (!spSoln->empty()) {
                     if (Globals::totalOrder && !postHocTotalOrder) {
                         MinimalState::setTransformer(new PartialOrderTransformer());
@@ -460,9 +461,9 @@ int main(int argc, char * argv[])
                 cout << "; States evaluated: " << RPGHeuristic::statesEvaluated << endl;
                 cout << "; Cost: " << planAndConstraints.quality << endl;
             }
-            
+
             FFEvent::printPlan(*spSoln);
-            
+
         }
 
         if (benchmark) {
@@ -661,7 +662,7 @@ list<FFEvent> * readPlan(char* filename)
         if (debug) {
             cout << "TIL " << toInsert.divisionID << " goes at " << tilTS << endl;
         }
-        
+
         list<FFEvent>::iterator insItr = toReturn->begin();
         const list<FFEvent>::iterator insEnd = toReturn->end();
         for (int insAt = 0; insItr != insEnd; ++insItr, ++insAt) {
@@ -679,7 +680,7 @@ list<FFEvent> * readPlan(char* filename)
     if (debug) {
         list<FFEvent>::iterator insItr = toReturn->begin();
         const list<FFEvent>::iterator insEnd = toReturn->end();
-        
+
         for (int i = 0; insItr != insEnd; ++insItr, ++i) {
             cout << i << ": ";
             if (insItr->action) {
@@ -697,4 +698,3 @@ list<FFEvent> * readPlan(char* filename)
 
     return toReturn;
 };
-
